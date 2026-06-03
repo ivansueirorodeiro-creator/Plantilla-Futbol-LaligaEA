@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Constructor de Plantillas LaLiga</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,sans-serif;background:#f5f5f0;color:#1a1a1a;min-height:100vh}
+.app-header{background:#fff;border-bottom:1px solid #e0e0d8;padding:14px 24px;display:flex;align-items:center;gap:10px}
+.app-header span{font-size:18px;font-weight:600}
+.app-header small{font-size:12px;color:#888;margin-left:4px}
+.app-body{max-width:960px;margin:0 auto;padding:24px 16px}
+.screen{display:none}.screen.active{display:block}
+.challenge-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(195px,1fr));gap:12px;margin-bottom:2rem}
+.challenge-card{background:#fff;border:1px solid #e0e0d8;border-radius:12px;padding:1rem;cursor:pointer;transition:border-color 0.15s,box-shadow 0.15s}
+.challenge-card:hover{border-color:#1D9E75;box-shadow:0 2px 8px rgba(0,0,0,0.08)}
+.challenge-card .badge{font-size:11px;padding:2px 8px;border-radius:4px;display:inline-block;margin-bottom:8px;font-weight:600}
+.challenge-card h3{font-size:14px;font-weight:600;margin-bottom:4px}
+.challenge-card p{font-size:12px;color:#666;line-height:1.5}
+.top-bar{display:flex;align-items:center;gap:10px;margin-bottom:1rem;flex-wrap:wrap}
+.top-bar h2{font-size:16px;font-weight:600;flex:1}
+.rules-list{background:#f5f5f0;border-radius:8px;padding:10px 14px;margin-bottom:1rem;display:flex;flex-wrap:wrap;gap:8px}
+.rule-tag{background:#fff;border:1px solid #e0e0d8;border-radius:4px;padding:2px 8px;font-size:11px;color:#555;display:flex;align-items:center;gap:4px}
+.pitch-wrap{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap}
+.pitch-col{flex:1;min-width:260px}
+.squad-col{flex:1;min-width:220px;max-width:340px}
+svg.pitch{width:100%;border-radius:10px;display:block}
+.search-wrap{position:relative;margin-bottom:8px}
+.search-wrap input{width:100%;padding:8px 12px;font-size:13px;border-radius:8px;border:1px solid #ccc;background:#fff;color:#1a1a1a;outline:none}
+.search-wrap input:focus{border-color:#1D9E75;box-shadow:0 0 0 3px rgba(29,158,117,0.15)}
+.dropdown{background:#fff;border:1px solid #e0e0d8;border-radius:8px;max-height:220px;overflow-y:auto;position:absolute;top:100%;left:0;right:0;z-index:50;margin-top:2px;box-shadow:0 4px 12px rgba(0,0,0,0.12)}
+.dropdown-item{padding:7px 12px;font-size:13px;cursor:pointer;border-bottom:1px solid #f0f0e8}
+.dropdown-item:last-child{border-bottom:none}
+.dropdown-item:hover{background:#f5f5f0}
+.dropdown-item .meta{font-size:11px;color:#888;margin-top:1px}
+.slot-row{display:flex;align-items:center;gap:7px;padding:5px 4px;border-bottom:1px solid #f0f0e8;cursor:pointer;border-radius:6px}
+.slot-row:hover{background:#f5f5f0}
+.slot-row.active-slot{background:#e1f5ee}
+.slot-num{width:22px;height:22px;border-radius:50%;background:#1D9E75;color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.slot-pos{font-size:10px;color:#888;width:32px;flex-shrink:0;text-align:center}
+.slot-name{flex:1;font-size:12px}
+.slot-name.empty{color:#bbb;font-style:italic}
+.slot-clear{background:none;border:none;cursor:pointer;color:#ccc;font-size:15px;padding:0 2px}
+.slot-clear:hover{color:#e24b4a}
+.sel-hint{font-size:12px;color:#1D9E75;margin-bottom:8px;min-height:18px;font-weight:500}
+.validate-bar{margin-top:1rem;padding:11px 14px;border-radius:8px;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px}
+.validate-bar.ok{background:#e1f5ee;color:#0F6E56}
+.validate-bar.err{background:#FCEBEB;color:#A32D2D}
+button{padding:7px 14px;border-radius:8px;border:1px solid #ccc;background:#fff;color:#1a1a1a;font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-family:inherit;transition:background 0.1s}
+button:hover{background:#f0f0e8}
+button.primary{background:#1D9E75;color:#fff;border-color:#1D9E75}
+button.primary:hover{background:#0F6E56}
+.budget-bar{font-size:12px;color:#666;margin-top:6px;padding:6px 10px;background:#f5f5f0;border-radius:6px}
+.budget-bar span{font-weight:600;color:#1a1a1a}
+.page-title{font-size:22px;font-weight:700;margin-bottom:4px}
+.page-sub{font-size:13px;color:#666;margin-bottom:1.5rem}
+.no-results{padding:8px 12px;font-size:13px;color:#aaa}
+</style>
+</head>
+<body>
+<div class="app-header">
+  <i class="ti ti-ball-football" style="font-size:24px;color:#1D9E75"></i>
+  <span>Constructor LaLiga</span>
+  <small>2025/26 · 20 equipos · +200 jugadores</small>
+</div>
+<div class="app-body">
+  <div id="screen-home" class="screen active">
+    <p class="page-title">Elige un reto</p>
+    <p class="page-sub">Solo jugadores de LaLiga EA Sports 2025/26. Cada reto tiene sus propias restricciones.</p>
+    <div class="challenge-grid" id="challengeGrid"></div>
+  </div>
+  <div id="screen-game" class="screen">
+    <div class="top-bar">
+      <button onclick="goHome()"><i class="ti ti-arrow-left"></i> Retos</button>
+      <h2 id="gameTitle"></h2>
+      <button class="primary" onclick="validateTeam()"><i class="ti ti-check"></i> Validar</button>
+    </div>
+    <div class="rules-list" id="rulesList"></div>
+    <div class="pitch-wrap">
+      <div class="pitch-col">
+        <svg class="pitch" id="pitchSvg" viewBox="0 0 280 430" xmlns="http://www.w3.org/2000/svg">
+          <rect width="280" height="430" fill="#2d7a3a" rx="10"/>
+          <rect x="8" y="8" width="264" height="414" fill="none" stroke="rgba(255,255,255,0.45)" stroke-width="1.2" rx="3"/>
+          <line x1="8" y1="215" x2="272" y2="215" stroke="rgba(255,255,255,0.45)" stroke-width="1.2"/>
+          <circle cx="140" cy="215" r="36" fill="none" stroke="rgba(255,255,255,0.45)" stroke-width="1.2"/>
+          <circle cx="140" cy="215" r="2.5" fill="rgba(255,255,255,0.6)"/>
+          <rect x="88" y="8" width="104" height="44" fill="none" stroke="rgba(255,255,255,0.45)" stroke-width="1.2"/>
+          <rect x="113" y="8" width="54" height="18" fill="none" stroke="rgba(255,255,255,0.45)" stroke-width="1.2"/>
+          <rect x="88" y="378" width="104" height="44" fill="none" stroke="rgba(255,255,255,0.45)" stroke-width="1.2"/>
+          <rect x="113" y="414" width="54" height="18" fill="none" stroke="rgba(255,255,255,0.45)" stroke-width="1.2"/>
+          <circle cx="140" cy="54" r="2.5" fill="rgba(255,255,255,0.6)"/>
+          <circle cx="140" cy="376" r="2.5" fill="rgba(255,255,255,0.6)"/>
+          <g id="playerNodes"></g>
+        </svg>
+        <div class="budget-bar" id="budgetBar" style="display:none">
+          Gasto: <span id="budgetSpent">0</span>M€ / <span id="budgetMax">0</span>M€
+        </div>
+      </div>
+      <div class="squad-col">
+        <div class="sel-hint" id="selHint">Selecciona una posición en el campo</div>
+        <div class="search-wrap" id="searchWrap" style="display:none">
+          <input type="text" id="searchInput" placeholder="Buscar jugador..." oninput="filterPlayers()" autocomplete="off"/>
+          <div class="dropdown" id="dropdown" style="display:none"></div>
+        </div>
+        <div id="slotList"></div>
+        <div class="validate-bar" id="validateBar" style="display:none"></div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+// ===================== BASE DE DATOS =====================
+// ~200 jugadores de LaLiga 2025-26 (20 equipos)
+const DB = [
+  // REAL MADRID
+  {n:"Courtois",c:"Real Madrid",nat:"Belga",age:33,v:30,pos:"POR"},
+  {n:"Lunin",c:"Real Madrid",nat:"Ucraniana",age:25,v:20,pos:"POR"},
+  {n:"Carvajal",c:"Real Madrid",nat:"Española",age:33,v:20,pos:"DFC"}, // lesión larga
+  {n:"Militão",c:"Real Madrid",nat:"Brasileña",age:27,v:55,pos:"DFC"},
+  {n:"Alaba",c:"Real Madrid",nat:"Austriaca",age:32,v:12,pos:"DFC"},
+  {n:"Rüdiger",c:"Real Madrid",nat:"Alemana",age:32,v:25,pos:"DFC"},
+  {n:"Tchouaméni",c:"Real Madrid",nat:"Francesa",age:25,v:70,pos:"DFC"},
+  {n:"Fran García",c:"Real Madrid",nat:"Española",age:25,v:18,pos:"LI"},
+  {n:"Mendy",c:"Real Madrid",nat:"Francesa",age:30,v:18,pos:"LI"},
+  {n:"Valverde",c:"Real Madrid",nat:"Uruguaya",age:26,v:100,pos:"MC"},
+  {n:"Camavinga",c:"Real Madrid",nat:"Francesa",age:22,v:80,pos:"MC"},
+  {n:"Modric",c:"Real Madrid",nat:"Croata",age:39,v:4,pos:"MC"},
+  {n:"Bellingham",c:"Real Madrid",nat:"Inglesa",age:21,v:180,pos:"MC"},
+  {n:"Ceballos",c:"Real Madrid",nat:"Española",age:29,v:18,pos:"MC"},
+  {n:"Mbappé",c:"Real Madrid",nat:"Francesa",age:26,v:180,pos:"EI"},
+  {n:"Vinícius Jr.",c:"Real Madrid",nat:"Brasileña",age:24,v:180,pos:"EI"},
+  {n:"Rodrygo",c:"Real Madrid",nat:"Brasileña",age:24,v:90,pos:"EI"},
+  {n:"Güler",c:"Real Madrid",nat:"Turca",age:20,v:55,pos:"MC"},
+  // FC BARCELONA
+  {n:"Szczesny",c:"FC Barcelona",nat:"Polaca",age:35,v:4,pos:"POR"},
+  {n:"Iñaki Peña",c:"FC Barcelona",nat:"Española",age:26,v:10,pos:"POR"},
+  {n:"Koundé",c:"FC Barcelona",nat:"Francesa",age:26,v:65,pos:"LD"},
+  {n:"Araujo",c:"FC Barcelona",nat:"Uruguaya",age:25,v:60,pos:"DFC"},
+  {n:"Iñigo Martínez",c:"FC Barcelona",nat:"Española",age:34,v:5,pos:"DFC"},
+  {n:"Cubarsí",c:"FC Barcelona",nat:"Española",age:18,v:60,pos:"DFC"},
+  {n:"Balde",c:"FC Barcelona",nat:"Española",age:21,v:50,pos:"LI"},
+  {n:"De Jong",c:"FC Barcelona",nat:"Holandesa",age:28,v:60,pos:"MC"},
+  {n:"Pedri",c:"FC Barcelona",nat:"Española",age:23,v:100,pos:"MC"},
+  {n:"Gavi",c:"FC Barcelona",nat:"Española",age:20,v:80,pos:"MC"},
+  {n:"Dani Olmo",c:"FC Barcelona",nat:"Española",age:27,v:65,pos:"MC"},
+  {n:"Casadó",c:"FC Barcelona",nat:"Española",age:21,v:25,pos:"MC"},
+  {n:"Lamine Yamal",c:"FC Barcelona",nat:"Española",age:18,v:200,pos:"ED"},
+  {n:"Raphinha",c:"FC Barcelona",nat:"Brasileña",age:28,v:75,pos:"EI"},
+  {n:"Ferran Torres",c:"FC Barcelona",nat:"Española",age:25,v:30,pos:"EI"},
+  {n:"Lewandowski",c:"FC Barcelona",nat:"Polaca",age:37,v:8,pos:"DC"},
+  {n:"Fermin López",c:"FC Barcelona",nat:"Española",age:22,v:28,pos:"MC"},
+  // ATLÉTICO DE MADRID
+  {n:"Oblak",c:"Atlético de Madrid",nat:"Eslovena",age:32,v:28,pos:"POR"},
+  {n:"Moyano",c:"Atlético de Madrid",nat:"Española",age:23,v:8,pos:"POR"},
+  {n:"Marcos Llorente",c:"Atlético de Madrid",nat:"Española",age:30,v:20,pos:"LD"},
+  {n:"Giménez",c:"Atlético de Madrid",nat:"Uruguaya",age:30,v:30,pos:"DFC"},
+  {n:"Le Normand",c:"Atlético de Madrid",nat:"Francesa",age:27,v:35,pos:"DFC"},
+  {n:"Lenglet",c:"Atlético de Madrid",nat:"Francesa",age:29,v:12,pos:"DFC"},
+  {n:"Reinildo",c:"Atlético de Madrid",nat:"Mozambiqueña",age:31,v:10,pos:"LI"},
+  {n:"De Paul",c:"Atlético de Madrid",nat:"Argentina",age:31,v:25,pos:"MC"},
+  {n:"Koke",c:"Atlético de Madrid",nat:"Española",age:33,v:5,pos:"MC"},
+  {n:"Barrios",c:"Atlético de Madrid",nat:"Colombiana",age:23,v:22,pos:"MC"},
+  {n:"Gallagher",c:"Atlético de Madrid",nat:"Inglesa",age:25,v:35,pos:"MC"},
+  {n:"Griezmann",c:"Atlético de Madrid",nat:"Francesa",age:34,v:15,pos:"EI"},
+  {n:"Julián Álvarez",c:"Atlético de Madrid",nat:"Argentina",age:25,v:90,pos:"DC"},
+  {n:"Sørloth",c:"Atlético de Madrid",nat:"Noruega",age:29,v:28,pos:"DC"},
+  {n:"Correa",c:"Atlético de Madrid",nat:"Argentina",age:30,v:12,pos:"EI"},
+  // VILLARREAL
+  {n:"Filip Jörgensen",c:"Villarreal CF",nat:"Danesa",age:23,v:25,pos:"POR"},
+  {n:"Baena",c:"Villarreal CF",nat:"Española",age:23,v:40,pos:"MC"},
+  {n:"Parejo",c:"Villarreal CF",nat:"Española",age:36,v:4,pos:"MC"},
+  {n:"Capoue",c:"Villarreal CF",nat:"Francesa",age:36,v:3,pos:"MC"},
+  {n:"Comesaña",c:"Villarreal CF",nat:"Española",age:26,v:12,pos:"MC"},
+  {n:"Danjuma",c:"Villarreal CF",nat:"Holandesa",age:28,v:15,pos:"EI"},
+  {n:"Morales",c:"Villarreal CF",nat:"Española",age:33,v:5,pos:"EI"},
+  {n:"Pino",c:"Villarreal CF",nat:"Española",age:22,v:40,pos:"EI"},
+  {n:"Sorloth",c:"Villarreal CF",nat:"Noruega",age:29,v:28,pos:"DC"},
+  {n:"Pedraza",c:"Villarreal CF",nat:"Española",age:28,v:18,pos:"LI"},
+  {n:"Pau Torres",c:"Villarreal CF",nat:"Española",age:28,v:35,pos:"DFC"},
+  // ATHLETIC CLUB
+  {n:"Agirrezabala",c:"Athletic Club",nat:"Española",age:24,v:12,pos:"POR"},
+  {n:"Unai Simón",c:"Athletic Club",nat:"Española",age:27,v:25,pos:"POR"},
+  {n:"De Marcos",c:"Athletic Club",nat:"Española",age:34,v:4,pos:"LD"},
+  {n:"Vivian",c:"Athletic Club",nat:"Española",age:25,v:20,pos:"DFC"},
+  {n:"Yeray",c:"Athletic Club",nat:"Española",age:29,v:18,pos:"DFC"},
+  {n:"Berchiche",c:"Athletic Club",nat:"Española",age:34,v:4,pos:"LI"},
+  {n:"Jauregizar",c:"Athletic Club",nat:"Española",age:22,v:8,pos:"LI"},
+  {n:"Prados",c:"Athletic Club",nat:"Española",age:24,v:12,pos:"MC"},
+  {n:"Vesga",c:"Athletic Club",nat:"Española",age:30,v:8,pos:"MC"},
+  {n:"Oihan Sancet",c:"Athletic Club",nat:"Española",age:24,v:35,pos:"MC"},
+  {n:"Nico Williams",c:"Athletic Club",nat:"Española",age:22,v:100,pos:"EI"},
+  {n:"Iñaki Williams",c:"Athletic Club",nat:"Ghanesa",age:30,v:20,pos:"DC"},
+  {n:"Guruzeta",c:"Athletic Club",nat:"Española",age:26,v:22,pos:"DC"},
+  {n:"Berenguer",c:"Athletic Club",nat:"Española",age:31,v:8,pos:"EI"},
+  // REAL SOCIEDAD
+  {n:"Remiro",c:"Real Sociedad",nat:"Española",age:29,v:20,pos:"POR"},
+  {n:"Traoré",c:"Real Sociedad",nat:"Española",age:24,v:15,pos:"LD"},
+  {n:"Zubeldia",c:"Real Sociedad",nat:"Española",age:27,v:15,pos:"DFC"},
+  {n:"Pacheco",c:"Real Sociedad",nat:"Española",age:26,v:15,pos:"DFC"},
+  {n:"Aihen",c:"Real Sociedad",nat:"Española",age:29,v:8,pos:"LI"},
+  {n:"Zubimendi",c:"Real Sociedad",nat:"Española",age:26,v:55,pos:"MC"},
+  {n:"Brais Méndez",c:"Real Sociedad",nat:"Española",age:28,v:25,pos:"MC"},
+  {n:"Merino",c:"Real Sociedad",nat:"Española",age:28,v:25,pos:"MC"},
+  {n:"Oyarzabal",c:"Real Sociedad",nat:"Española",age:28,v:35,pos:"EI"},
+  {n:"Kubo",c:"Real Sociedad",nat:"Japonesa",age:23,v:40,pos:"EI"},
+  {n:"Sørloth",c:"Real Sociedad",nat:"Noruega",age:29,v:25,pos:"DC"},
+  {n:"Sergio Gómez",c:"Real Sociedad",nat:"Española",age:24,v:20,pos:"LI"},
+  // REAL BETIS
+  {n:"Rui Silva",c:"Real Betis",nat:"Portuguesa",age:31,v:10,pos:"POR"},
+  {n:"Sabaly",c:"Real Betis",nat:"Senegalesa",age:32,v:6,pos:"LD"},
+  {n:"Bartra",c:"Real Betis",nat:"Española",age:34,v:5,pos:"DFC"},
+  {n:"Diego Llorente",c:"Real Betis",nat:"Española",age:31,v:8,pos:"DFC"},
+  {n:"Mendy",c:"Real Betis",nat:"Francesa",age:27,v:15,pos:"LI"},
+  {n:"Guido Rodríguez",c:"Real Betis",nat:"Argentina",age:30,v:10,pos:"MC"},
+  {n:"Isco",c:"Real Betis",nat:"Española",age:33,v:5,pos:"MC"},
+  {n:"Fekir",c:"Real Betis",nat:"Francesa",age:32,v:8,pos:"MC"},
+  {n:"Lo Celso",c:"Real Betis",nat:"Argentina",age:28,v:20,pos:"MC"},
+  {n:"Fornals",c:"Real Betis",nat:"Española",age:29,v:15,pos:"MC"},
+  {n:"Abde",c:"Real Betis",nat:"Española",age:23,v:22,pos:"EI"},
+  {n:"Vitor Roque",c:"Real Betis",nat:"Brasileña",age:20,v:30,pos:"DC"},
+  {n:"Chimy Ávila",c:"Real Betis",nat:"Argentina",age:30,v:10,pos:"DC"},
+  // SEVILLA FC
+  {n:"Nyland",c:"Sevilla FC",nat:"Noruega",age:33,v:5,pos:"POR"},
+  {n:"Jesús Navas",c:"Sevilla FC",nat:"Española",age:39,v:1,pos:"LD"},
+  {n:"Gudelj",c:"Sevilla FC",nat:"Serbia",age:32,v:6,pos:"DFC"},
+  {n:"Badé",c:"Sevilla FC",nat:"Francesa",age:24,v:25,pos:"DFC"},
+  {n:"Carmona",c:"Sevilla FC",nat:"Española",age:23,v:22,pos:"LD"},
+  {n:"Juanlu",c:"Sevilla FC",nat:"Española",age:21,v:18,pos:"LD"},
+  {n:"Lukébakio",c:"Sevilla FC",nat:"Belga",age:27,v:20,pos:"EI"},
+  {n:"Saúl",c:"Sevilla FC",nat:"Española",age:30,v:8,pos:"MC"},
+  {n:"Sow",c:"Sevilla FC",nat:"Suiza",age:27,v:15,pos:"MC"},
+  {n:"Gil Manzano",c:"Sevilla FC",nat:"Española",age:22,v:12,pos:"EI"},
+  {n:"Isaac Romero",c:"Sevilla FC",nat:"Española",age:23,v:15,pos:"DC"},
+  {n:"Davis",c:"Sevilla FC",nat:"Jamaicana",age:27,v:18,pos:"MC"},
+  // CELTA DE VIGO
+  {n:"Guaita",c:"Celta de Vigo",nat:"Española",age:37,v:3,pos:"POR"},
+  {n:"Hugo Mallo",c:"Celta de Vigo",nat:"Española",age:33,v:3,pos:"LD"},
+  {n:"Unai Núñez",c:"Celta de Vigo",nat:"Española",age:27,v:10,pos:"DFC"},
+  {n:"Starfelt",c:"Celta de Vigo",nat:"Sueca",age:30,v:8,pos:"DFC"},
+  {n:"Jailson",c:"Celta de Vigo",nat:"Brasileña",age:35,v:2,pos:"DFC"},
+  {n:"Galán",c:"Celta de Vigo",nat:"Española",age:28,v:12,pos:"LI"},
+  {n:"Tapia",c:"Celta de Vigo",nat:"Peruana",age:29,v:10,pos:"MC"},
+  {n:"Beltrán",c:"Celta de Vigo",nat:"Argentina",age:24,v:20,pos:"MC"},
+  {n:"Carles Pérez",c:"Celta de Vigo",nat:"Española",age:26,v:12,pos:"EI"},
+  {n:"Iago Aspas",c:"Celta de Vigo",nat:"Española",age:37,v:4,pos:"DC"},
+  {n:"Borja Iglesias",c:"Celta de Vigo",nat:"Española",age:32,v:8,pos:"DC"},
+  {n:"Williot Swedberg",c:"Celta de Vigo",nat:"Sueca",age:21,v:15,pos:"EI"},
+  // OSASUNA
+  {n:"Herrera",c:"Osasuna",nat:"Española",age:31,v:6,pos:"POR"},
+  {n:"Nacho Vidal",c:"Osasuna",nat:"Española",age:30,v:5,pos:"LD"},
+  {n:"Herrando",c:"Osasuna",nat:"Española",age:24,v:8,pos:"DFC"},
+  {n:"Aridane",c:"Osasuna",nat:"Española",age:33,v:4,pos:"DFC"},
+  {n:"Juan Cruz",c:"Osasuna",nat:"Española",age:30,v:5,pos:"LI"},
+  {n:"Moncayola",c:"Osasuna",nat:"Española",age:27,v:8,pos:"MC"},
+  {n:"Torró",c:"Osasuna",nat:"Española",age:32,v:4,pos:"MC"},
+  {n:"Lucas Torró",c:"Osasuna",nat:"Española",age:31,v:5,pos:"MC"},
+  {n:"Budimir",c:"Osasuna",nat:"Croata",age:32,v:8,pos:"DC"},
+  {n:"Rubén García",c:"Osasuna",nat:"Española",age:31,v:6,pos:"EI"},
+  {n:"Ante Budimir",c:"Osasuna",nat:"Croata",age:33,v:6,pos:"DC"},
+  {n:"Bryan Zaragoza",c:"Osasuna",nat:"Española",age:23,v:18,pos:"EI"},
+  // GETAFE
+  {n:"Soria",c:"Getafe CF",nat:"Española",age:36,v:3,pos:"POR"},
+  {n:"Damián Suárez",c:"Getafe CF",nat:"Uruguaya",age:36,v:2,pos:"LD"},
+  {n:"Djené",c:"Getafe CF",nat:"Togolesa",age:33,v:4,pos:"DFC"},
+  {n:"Alderete",c:"Getafe CF",nat:"Paraguaya",age:28,v:5,pos:"DFC"},
+  {n:"Iglesias",c:"Getafe CF",nat:"Española",age:23,v:5,pos:"LI"},
+  {n:"Maksimovic",c:"Getafe CF",nat:"Serbia",age:32,v:4,pos:"MC"},
+  {n:"Mauro Arambarri",c:"Getafe CF",nat:"Uruguaya",age:29,v:8,pos:"MC"},
+  {n:"Coba da Costa",c:"Getafe CF",nat:"Guinea Ecuatorial",age:24,v:6,pos:"MC"},
+  {n:"Enes Ünal",c:"Getafe CF",nat:"Turca",age:27,v:10,pos:"DC"},
+  {n:"Greenwood",c:"Getafe CF",nat:"Inglesa",age:24,v:30,pos:"EI"},
+  {n:"Borja Mayoral",c:"Getafe CF",nat:"Española",age:28,v:12,pos:"DC"},
+  // RAYO VALLECANO
+  {n:"Dimitrievski",c:"Rayo Vallecano",nat:"Macedonia",age:31,v:5,pos:"POR"},
+  {n:"Ratiu",c:"Rayo Vallecano",nat:"Rumana",age:28,v:6,pos:"LD"},
+  {n:"Lejeune",c:"Rayo Vallecano",nat:"Francesa",age:33,v:3,pos:"DFC"},
+  {n:"Aridai",c:"Rayo Vallecano",nat:"Española",age:26,v:5,pos:"DFC"},
+  {n:"Fran García B",c:"Rayo Vallecano",nat:"Española",age:26,v:8,pos:"LI"},
+  {n:"Unai López",c:"Rayo Vallecano",nat:"Española",age:28,v:5,pos:"MC"},
+  {n:"Comesaña",c:"Rayo Vallecano",nat:"Española",age:26,v:6,pos:"MC"},
+  {n:"Álvaro García",c:"Rayo Vallecano",nat:"Española",age:31,v:5,pos:"EI"},
+  {n:"De Frutos",c:"Rayo Vallecano",nat:"Española",age:27,v:8,pos:"EI"},
+  {n:"Randy",c:"Rayo Vallecano",nat:"Española",age:23,v:6,pos:"EI"},
+  {n:"Embarba",c:"Rayo Vallecano",nat:"Española",age:33,v:3,pos:"EI"},
+  {n:"Nteka",c:"Rayo Vallecano",nat:"Congoleña",age:28,v:7,pos:"MC"},
+  // GIRONA FC
+  {n:"Gazzaniga",c:"Girona FC",nat:"Argentina",age:32,v:6,pos:"POR"},
+  {n:"Arnau Martínez",c:"Girona FC",nat:"Española",age:23,v:25,pos:"LD"},
+  {n:"Blind",c:"Girona FC",nat:"Holandesa",age:34,v:4,pos:"DFC"},
+  {n:"David López",c:"Girona FC",nat:"Española",age:34,v:4,pos:"DFC"},
+  {n:"Cucho Hernández",c:"Girona FC",nat:"Colombiana",age:26,v:18,pos:"DC"},
+  {n:"Abel Ruiz",c:"Girona FC",nat:"Española",age:25,v:15,pos:"DC"},
+  {n:"Tsygankov",c:"Girona FC",nat:"Ucraniana",age:27,v:12,pos:"EI"},
+  {n:"Yan Couto",c:"Girona FC",nat:"Brasileña",age:23,v:20,pos:"LD"},
+  {n:"Romeu",c:"Girona FC",nat:"Española",age:33,v:5,pos:"MC"},
+  {n:"Danjuma",c:"Girona FC",nat:"Holandesa",age:28,v:15,pos:"EI"},
+  {n:"Bryan Gil",c:"Girona FC",nat:"Española",age:24,v:18,pos:"EI"},
+  // ESPANYOL
+  {n:"Joan García",c:"Espanyol",nat:"Española",age:24,v:15,pos:"POR"},
+  {n:"Kumbulla",c:"Espanyol",nat:"Albanesa",age:25,v:8,pos:"DFC"},
+  {n:"Cabrera",c:"Espanyol",nat:"Uruguaya",age:30,v:5,pos:"DFC"},
+  {n:"Aguado",c:"Espanyol",nat:"Española",age:26,v:8,pos:"LD"},
+  {n:"Pedrosa",c:"Espanyol",nat:"Española",age:27,v:10,pos:"LI"},
+  {n:"Darder",c:"Espanyol",nat:"Española",age:28,v:12,pos:"MC"},
+  {n:"Tejero",c:"Espanyol",nat:"Española",age:26,v:8,pos:"MC"},
+  {n:"Exposito",c:"Espanyol",nat:"Española",age:27,v:10,pos:"MC"},
+  {n:"Braithwaite",c:"Espanyol",nat:"Danesa",age:34,v:4,pos:"DC"},
+  {n:"Javi Puado",c:"Espanyol",nat:"Española",age:25,v:10,pos:"EI"},
+  {n:"Pol Lozano",c:"Espanyol",nat:"Española",age:27,v:6,pos:"MC"},
+  // LEVANTE UD (ascendido)
+  {n:"Andrés Fernández",c:"Levante UD",nat:"Española",age:36,v:2,pos:"POR"},
+  {n:"Miramón",c:"Levante UD",nat:"Española",age:33,v:2,pos:"LD"},
+  {n:"Vezo",c:"Levante UD",nat:"Portuguesa",age:31,v:4,pos:"DFC"},
+  {n:"Postigo",c:"Levante UD",nat:"Española",age:37,v:2,pos:"DFC"},
+  {n:"Franquesa",c:"Levante UD",nat:"Española",age:29,v:3,pos:"LI"},
+  {n:"Pepelu",c:"Levante UD",nat:"Española",age:25,v:12,pos:"MC"},
+  {n:"Campaña",c:"Levante UD",nat:"Española",age:31,v:4,pos:"MC"},
+  {n:"Son",c:"Levante UD",nat:"Española",age:25,v:6,pos:"EI"},
+  {n:"Roger Martí",c:"Levante UD",nat:"Española",age:34,v:3,pos:"DC"},
+  {n:"Dani Gómez",c:"Levante UD",nat:"Española",age:27,v:8,pos:"DC"},
+  {n:"Sergio León",c:"Levante UD",nat:"Española",age:36,v:1,pos:"DC"},
+  // ELCHE CF (ascendido)
+  {n:"Badía",c:"Elche CF",nat:"Española",age:35,v:2,pos:"POR"},
+  {n:"Bigas",c:"Elche CF",nat:"Española",age:32,v:2,pos:"DFC"},
+  {n:"Gonzalo Verdú",c:"Elche CF",nat:"Española",age:33,v:2,pos:"DFC"},
+  {n:"Fidel",c:"Elche CF",nat:"Española",age:34,v:2,pos:"EI"},
+  {n:"Pere Milla",c:"Elche CF",nat:"Española",age:29,v:4,pos:"EI"},
+  {n:"Raúl Guti",c:"Elche CF",nat:"Española",age:27,v:5,pos:"MC"},
+  {n:"Almería",c:"Elche CF",nat:"Española",age:25,v:4,pos:"MC"},
+  {n:"Lucas Boyé",c:"Elche CF",nat:"Argentina",age:28,v:5,pos:"DC"},
+  // MALLORCA
+  {n:"Greif",c:"Mallorca",nat:"Checa",age:29,v:5,pos:"POR"},
+  {n:"Maffeo",c:"Mallorca",nat:"Española",age:27,v:10,pos:"LD"},
+  {n:"Valjent",c:"Mallorca",nat:"Eslovaca",age:29,v:8,pos:"DFC"},
+  {n:"Raíllo",c:"Mallorca",nat:"Española",age:33,v:5,pos:"DFC"},
+  {n:"Mojica",c:"Mallorca",nat:"Colombiana",age:30,v:6,pos:"LI"},
+  {n:"Mascarell",c:"Mallorca",nat:"Española",age:33,v:3,pos:"MC"},
+  {n:"Samú Costa",c:"Mallorca",nat:"Portuguesa",age:25,v:10,pos:"MC"},
+  {n:"Dani Rodríguez",c:"Mallorca",nat:"Española",age:34,v:3,pos:"MC"},
+  {n:"Muriqi",c:"Mallorca",nat:"Kosovar",age:30,v:15,pos:"DC"},
+  {n:"Abdón Prats",c:"Mallorca",nat:"Española",age:32,v:4,pos:"DC"},
+  {n:"Larin",c:"Mallorca",nat:"Canadiense",age:29,v:6,pos:"DC"},
+  // ALAVÉS
+  {n:"Sivera",c:"Alavés",nat:"Española",age:28,v:5,pos:"POR"},
+  {n:"Tenaglia",c:"Alavés",nat:"Argentina",age:23,v:6,pos:"LD"},
+  {n:"Abqar",c:"Alavés",nat:"Española",age:22,v:5,pos:"DFC"},
+  {n:"Sedlar",c:"Alavés",nat:"Eslovena",age:27,v:5,pos:"DFC"},
+  {n:"Duarte",c:"Alavés",nat:"Costarricense",age:28,v:5,pos:"LI"},
+  {n:"Guridi",c:"Alavés",nat:"Española",age:27,v:8,pos:"MC"},
+  {n:"Blanco",c:"Alavés",nat:"Española",age:27,v:8,pos:"MC"},
+  {n:"Laguardia",c:"Alavés",nat:"Española",age:35,v:3,pos:"DFC"},
+  {n:"Carlos Vicente",c:"Alavés",nat:"Española",age:24,v:7,pos:"EI"},
+  {n:"Mamardashvili",c:"Alavés",nat:"Georgiana",age:24,v:15,pos:"POR"},
+  {n:"Rioja",c:"Alavés",nat:"Española",age:29,v:6,pos:"EI"},
+  // VALENCIA CF
+  {n:"Mamardashvili",c:"Valencia CF",nat:"Georgiana",age:24,v:15,pos:"POR"},
+  {n:"Thierry",c:"Valencia CF",nat:"Española",age:22,v:8,pos:"LD"},
+  {n:"Mosquera",c:"Valencia CF",nat:"Española",age:23,v:15,pos:"DFC"},
+  {n:"Diakhaby",c:"Valencia CF",nat:"Francesa",age:28,v:6,pos:"DFC"},
+  {n:"Gayà",c:"Valencia CF",nat:"Española",age:29,v:8,pos:"LI"},
+  {n:"Guillamón",c:"Valencia CF",nat:"Española",age:25,v:10,pos:"MC"},
+  {n:"Pepelu",c:"Valencia CF",nat:"Española",age:25,v:10,pos:"MC"},
+  {n:"Diego López",c:"Valencia CF",nat:"Española",age:23,v:8,pos:"MC"},
+  {n:"Hugo Duro",c:"Valencia CF",nat:"Española",age:24,v:12,pos:"DC"},
+  {n:"Umar Sadiq",c:"Valencia CF",nat:"Nigeriana",age:27,v:10,pos:"DC"},
+  {n:"Ricard Sánchez",c:"Valencia CF",nat:"Española",age:22,v:6,pos:"EI"},
+  // OVIEDO (ascendido)
+  {n:"Martínez",c:"Oviedo",nat:"Española",age:24,v:3,pos:"POR"},
+  {n:"Mossa",c:"Oviedo",nat:"Española",age:27,v:3,pos:"LD"},
+  {n:"Krhin",c:"Oviedo",nat:"Eslovena",age:34,v:2,pos:"MC"},
+  {n:"Borja Sánchez",c:"Oviedo",nat:"Española",age:23,v:5,pos:"EI"},
+  {n:"Bastón",c:"Oviedo",nat:"Española",age:35,v:2,pos:"DC"},
+  {n:"Javi Mier",c:"Oviedo",nat:"Española",age:22,v:4,pos:"MC"},
+];
+
+// Quitar duplicados de nombre en equipos distintos con mismo nombre
+// (p.e. Danjuma aparece en Villarreal y Girona, Sørloth en Atlético y Sociedad, etc.)
+// Se mantiene intencional para reflejo de traspasos de temporada
+
+const CHALLENGES = [
+  {id:1,title:"Todo LaLiga sin repetir equipo",color:"#E1F5EE",textColor:"#0F6E56",badgeText:"Regla principal",
+   desc:"11 jugadores de LaLiga. Ningún equipo puede repetirse.",
+   formation:"4-3-3",rules:{noRepeatClub:true}},
+  {id:2,title:"Solo jugadores españoles",color:"#FAEEDA",textColor:"#854F0B",badgeText:"Nacionalidad",
+   desc:"Los 11 jugadores deben tener nacionalidad española.",
+   formation:"4-4-2",rules:{nationality:"Española"}},
+  {id:3,title:"Sin jugadores españoles",color:"#FBEAF0",textColor:"#993556",badgeText:"Extranjeros",
+   desc:"Ningún jugador puede ser español. Solo extranjeros.",
+   formation:"4-3-3",rules:{noNationality:"Española"}},
+  {id:4,title:"Sub-25 sin repetir equipo",color:"#EAF3DE",textColor:"#3B6D11",badgeText:"Jóvenes",
+   desc:"Solo jugadores de 24 años o menos. Sin repetir club.",
+   formation:"4-2-3-1",rules:{maxAge:24,noRepeatClub:true}},
+  {id:5,title:"Presupuesto 150M€",color:"#E6F1FB",textColor:"#185FA5",badgeText:"Presupuesto",
+   desc:"Valor de mercado total máximo: 150M€. Sin repetir equipo.",
+   formation:"4-4-2",rules:{budget:150,noRepeatClub:true}},
+  {id:6,title:"El XI más caro de LaLiga",color:"#EEEDFE",textColor:"#534AB7",badgeText:"Premium",
+   desc:"Forma el XI más caro posible. Presupuesto ilimitado. Sin repetir equipo.",
+   formation:"4-3-3",rules:{noRepeatClub:true,showValue:true}},
+  {id:7,title:"Madrid vs Barça",color:"#FAECE7",textColor:"#993C1D",badgeText:"Clásico",
+   desc:"5 jugadores del Real Madrid y 6 del FC Barcelona (o viceversa).",
+   formation:"4-3-3",rules:{mixedClubs:["Real Madrid","FC Barcelona"],splitCount:[5,6]}},
+  {id:8,title:"Sin repetir nacionalidad",color:"#E1F5EE",textColor:"#0F6E56",badgeText:"Diversidad",
+   desc:"11 jugadores de LaLiga, todos de distinta nacionalidad.",
+   formation:"4-4-2",rules:{noRepeatNation:true}},
+  {id:9,title:"Solo veteranos +30",color:"#FAEEDA",textColor:"#854F0B",badgeText:"Experiencia",
+   desc:"Todos los jugadores deben tener 30 años o más.",
+   formation:"4-4-2",rules:{minAge:30,noRepeatClub:true}},
+  {id:10,title:"Máximo defensivo",color:"#EAF3DE",textColor:"#3B6D11",badgeText:"Defensivo",
+   desc:"Al menos 7 jugadores deben ser defensas o porteros. Sin repetir equipo.",
+   formation:"5-3-2",rules:{minDefenders:7,noRepeatClub:true}},
+];
+
+const FORMATIONS_POS = {
+  "4-3-3":[{pos:"POR",x:140,y:402},{pos:"LI",x:48,y:330},{pos:"DFC",x:100,y:320},{pos:"DFC",x:180,y:320},{pos:"LD",x:232,y:330},{pos:"MC",x:78,y:233},{pos:"MC",x:140,y:220},{pos:"MC",x:202,y:233},{pos:"EI",x:60,y:135},{pos:"DC",x:140,y:120},{pos:"ED",x:220,y:135}],
+  "4-4-2":[{pos:"POR",x:140,y:402},{pos:"LI",x:48,y:330},{pos:"DFC",x:100,y:320},{pos:"DFC",x:180,y:320},{pos:"LD",x:232,y:330},{pos:"MCI",x:70,y:233},{pos:"MC",x:122,y:223},{pos:"MC",x:175,y:223},{pos:"MCD",x:220,y:233},{pos:"DC",x:100,y:125},{pos:"DC",x:180,y:125}],
+  "4-2-3-1":[{pos:"POR",x:140,y:402},{pos:"LI",x:48,y:330},{pos:"DFC",x:100,y:320},{pos:"DFC",x:180,y:320},{pos:"LD",x:232,y:330},{pos:"MCD",x:100,y:255},{pos:"MCD",x:180,y:255},{pos:"EI",x:65,y:175},{pos:"MC",x:140,y:170},{pos:"ED",x:215,y:175},{pos:"DC",x:140,y:108}],
+  "5-3-2":[{pos:"POR",x:140,y:402},{pos:"LI",x:35,y:330},{pos:"DFC",x:85,y:316},{pos:"DFC",x:140,y:310},{pos:"DFC",x:195,y:316},{pos:"LD",x:245,y:330},{pos:"MC",x:85,y:225},{pos:"MC",x:140,y:218},{pos:"MC",x:195,y:225},{pos:"DC",x:95,y:125},{pos:"DC",x:185,y:125}],
+};
+
+let currentChallenge=null,slots=[],selectedSlotIdx=null;
+
+function buildChallengeGrid(){
+  const g=document.getElementById("challengeGrid");
+  CHALLENGES.forEach(c=>{
+    const d=document.createElement("div");d.className="challenge-card";
+    d.innerHTML=`<span class="badge" style="background:${c.color};color:${c.textColor}">${c.badgeText}</span><h3>${c.title}</h3><p>${c.desc}</p>`;
+    d.onclick=()=>startChallenge(c);g.appendChild(d);
+  });
+}
+
+function startChallenge(c){
+  currentChallenge=c;
+  const positions=FORMATIONS_POS[c.formation];
+  slots=positions.map((p,i)=>({...p,num:i+1,player:null}));
+  selectedSlotIdx=null;
+  document.getElementById("gameTitle").textContent=c.title;
+  renderRules();renderPitch();renderSlotList();
+  document.getElementById("validateBar").style.display="none";
+  document.getElementById("searchWrap").style.display="none";
+  document.getElementById("selHint").textContent="Selecciona una posición en el campo";
+  const bb=document.getElementById("budgetBar");
+  if(c.rules.budget||c.rules.showValue){bb.style.display="block";document.getElementById("budgetMax").textContent=c.rules.budget||"∞";}
+  else bb.style.display="none";
+  document.getElementById("screen-home").classList.remove("active");
+  document.getElementById("screen-game").classList.add("active");
+}
+
+function goHome(){
+  document.getElementById("screen-game").classList.remove("active");
+  document.getElementById("screen-home").classList.add("active");
+}
+
+function renderRules(){
+  const r=currentChallenge.rules,tags=[];
+  tags.push(`<span class="rule-tag"><i class="ti ti-building-stadium"></i> Solo jugadores de LaLiga</span>`);
+  if(r.noRepeatClub)tags.push(`<span class="rule-tag"><i class="ti ti-users"></i> Sin repetir club</span>`);
+  if(r.noRepeatNation)tags.push(`<span class="rule-tag"><i class="ti ti-flag"></i> Sin repetir nación</span>`);
+  if(r.nationality)tags.push(`<span class="rule-tag"><i class="ti ti-flag"></i> Nac: ${r.nationality}</span>`);
+  if(r.noNationality)tags.push(`<span class="rule-tag"><i class="ti ti-flag-off"></i> Sin ${r.noNationality}</span>`);
+  if(r.maxAge)tags.push(`<span class="rule-tag"><i class="ti ti-calendar"></i> Máx ${r.maxAge} años</span>`);
+  if(r.minAge)tags.push(`<span class="rule-tag"><i class="ti ti-calendar"></i> Mín ${r.minAge} años</span>`);
+  if(r.budget)tags.push(`<span class="rule-tag"><i class="ti ti-coin"></i> Máx ${r.budget}M€</span>`);
+  if(r.minDefenders)tags.push(`<span class="rule-tag"><i class="ti ti-shield"></i> Mín ${r.minDefenders} def/POR</span>`);
+  if(r.mixedClubs)tags.push(`<span class="rule-tag"><i class="ti ti-shield-half"></i> ${r.mixedClubs[0]} + ${r.mixedClubs[1]}</span>`);
+  if(r.showValue)tags.push(`<span class="rule-tag"><i class="ti ti-trending-up"></i> Maximiza el valor</span>`);
+  document.getElementById("rulesList").innerHTML=tags.join("");
+}
+
+function renderPitch(){
+  const g=document.getElementById("playerNodes");g.innerHTML="";
+  const spent=slots.filter(s=>s.player).reduce((a,s)=>a+(s.player.v||0),0);
+  if(document.getElementById("budgetBar").style.display!=="none"){
+    document.getElementById("budgetSpent").textContent=spent;
+  }
+  slots.forEach((s,i)=>{
+    const isGK=s.pos==="POR",isSel=selectedSlotIdx===i;
+    const fill=isSel?"#1D9E75":(s.player?(isGK?"#e6a817":"#fff"):"rgba(255,255,255,0.22)");
+    const stroke=isSel?"#0F6E56":(s.player?(isGK?"#c47c00":"#ccc"):"rgba(255,255,255,0.5)");
+    const tFill=isSel?"#fff":(s.player?(isGK?"#fff":"#1a1a1a"):"rgba(255,255,255,0.7)");
+    const el=document.createElementNS("http://www.w3.org/2000/svg","g");
+    el.style.cursor="pointer";el.onclick=()=>selectSlot(i);
+    const circle=document.createElementNS("http://www.w3.org/2000/svg","circle");
+    circle.setAttribute("cx",s.x);circle.setAttribute("cy",s.y);circle.setAttribute("r",15);
+    circle.setAttribute("fill",fill);circle.setAttribute("stroke",stroke);circle.setAttribute("stroke-width","1.5");
+    const numT=document.createElementNS("http://www.w3.org/2000/svg","text");
+    numT.setAttribute("x",s.x);numT.setAttribute("y",s.y+4);numT.setAttribute("text-anchor","middle");
+    numT.setAttribute("font-size","10");numT.setAttribute("font-weight","600");numT.setAttribute("fill",tFill);numT.setAttribute("font-family","sans-serif");numT.textContent=s.num;
+    el.appendChild(circle);el.appendChild(numT);
+    if(s.player){
+      const short=s.player.n.split(" ").pop();
+      const nl=Math.min(short.length*4.8+8,72);
+      const bg=document.createElementNS("http://www.w3.org/2000/svg","rect");
+      bg.setAttribute("x",s.x-nl/2);bg.setAttribute("y",s.y+17);bg.setAttribute("width",nl);bg.setAttribute("height",12);
+      bg.setAttribute("rx",3);bg.setAttribute("fill","rgba(0,0,0,0.55)");
+      const nt=document.createElementNS("http://www.w3.org/2000/svg","text");
+      nt.setAttribute("x",s.x);nt.setAttribute("y",s.y+26);nt.setAttribute("text-anchor","middle");
+      nt.setAttribute("font-size","8");nt.setAttribute("fill","#fff");nt.setAttribute("font-family","sans-serif");
+      nt.textContent=short.length>11?short.slice(0,10)+"…":short;
+      el.appendChild(bg);el.appendChild(nt);
+    }
+    g.appendChild(el);
+  });
+}
+
+function selectSlot(i){
+  selectedSlotIdx=i;
+  document.getElementById("searchWrap").style.display="block";
+  document.getElementById("selHint").textContent=`Posición ${slots[i].num} — ${slots[i].pos}`;
+  document.getElementById("searchInput").value="";
+  document.getElementById("dropdown").style.display="none";
+  renderPitch();renderSlotList();
+  document.getElementById("searchInput").focus();
+}
+
+function getEligiblePlayers(){
+  if(!currentChallenge)return DB;
+  const r=currentChallenge.rules;
+  const usedClubs=slots.filter((s,j)=>s.player&&j!==selectedSlotIdx).map(s=>s.player.c);
+  const usedNations=slots.filter((s,j)=>s.player&&j!==selectedSlotIdx).map(s=>s.player.nat);
+  const usedNames=slots.filter((s,j)=>s.player&&j!==selectedSlotIdx).map(s=>s.player.n);
+  const currentSpent=slots.filter((s,j)=>s.player&&j!==selectedSlotIdx).reduce((a,s)=>a+(s.player.v||0),0);
+  return DB.filter(p=>{
+    if(usedNames.includes(p.n))return false;
+    if(r.noRepeatClub&&usedClubs.includes(p.c))return false;
+    if(r.noRepeatNation&&usedNations.includes(p.nat))return false;
+    if(r.nationality&&p.nat!==r.nationality)return false;
+    if(r.noNationality&&p.nat===r.noNationality)return false;
+    if(r.maxAge&&p.age>r.maxAge)return false;
+    if(r.minAge&&p.age<r.minAge)return false;
+    if(r.budget&&currentSpent+(p.v||0)>r.budget)return false;
+    if(r.mixedClubs&&!r.mixedClubs.includes(p.c))return false;
+    return true;
+  });
+}
+
+function filterPlayers(){
+  const q=document.getElementById("searchInput").value.toLowerCase().trim();
+  const dd=document.getElementById("dropdown");
+  if(!q){dd.style.display="none";return;}
+  const eligible=getEligiblePlayers();
+  const results=eligible.filter(p=>p.n.toLowerCase().includes(q)||p.c.toLowerCase().includes(q)).slice(0,10);
+  if(!results.length){
+    dd.innerHTML=`<div class="no-results">Sin resultados para este reto</div>`;
+    dd.style.display="block";return;
+  }
+  dd.innerHTML=results.map(p=>`<div class="dropdown-item" onclick='pickPlayer(${JSON.stringify(p).replace(/'/g,"&#39;")})'><div><strong>${p.n}</strong></div><div class="meta">${p.c} · ${p.nat} · ${p.age} años · ${p.v}M€ · ${p.pos}</div></div>`).join("");
+  dd.style.display="block";
+}
+
+function pickPlayer(p){
+  if(selectedSlotIdx===null)return;
+  slots[selectedSlotIdx].player=p;
+  document.getElementById("searchInput").value="";
+  document.getElementById("dropdown").style.display="none";
+  selectedSlotIdx=null;
+  document.getElementById("searchWrap").style.display="none";
+  document.getElementById("selHint").textContent="Selecciona una posición en el campo";
+  renderPitch();renderSlotList();
+  document.getElementById("validateBar").style.display="none";
+}
+
+function renderSlotList(){
+  document.getElementById("slotList").innerHTML=slots.map((s,i)=>`
+    <div class="slot-row${selectedSlotIdx===i?" active-slot":""}" onclick="selectSlot(${i})">
+      <div class="slot-num">${s.num}</div>
+      <div class="slot-pos">${s.pos}</div>
+      <div class="slot-name${s.player?"":" empty"}">${s.player?s.player.n+"<br><small style='color:#888;font-size:10px'>"+s.player.c+"</small>":"—"}</div>
+      ${s.player?`<button class="slot-clear" onclick="clearSlot(event,${i})"><i class="ti ti-x"></i></button>`:""}
+    </div>`).join("");
+}
+
+function clearSlot(e,i){
+  e.stopPropagation();slots[i].player=null;
+  renderPitch();renderSlotList();
+  document.getElementById("validateBar").style.display="none";
+}
+
+function validateTeam(){
+  const filled=slots.filter(s=>s.player);
+  const errors=[];
+  if(filled.length<11){errors.push(`Faltan ${11-filled.length} jugadores`);}
+  const r=currentChallenge.rules,players=filled.map(s=>s.player);
+  if(r.noRepeatClub){const clubs=players.map(p=>p.c),dup=[...new Set(clubs.filter((c,i)=>clubs.indexOf(c)!==i))];if(dup.length)errors.push(`Club repetido: ${dup.join(", ")}`);}
+  if(r.noRepeatNation){const nats=players.map(p=>p.nat),dup=[...new Set(nats.filter((n,i)=>nats.indexOf(n)!==i))];if(dup.length)errors.push(`Nación repetida: ${dup.join(", ")}`);}
+  if(r.nationality&&players.some(p=>p.nat!==r.nationality))errors.push(`Hay jugadores no ${r.nationality}s`);
+  if(r.noNationality&&players.some(p=>p.nat===r.noNationality))errors.push(`No puede haber jugadores ${r.noNationality}s`);
+  if(r.maxAge&&players.some(p=>p.age>r.maxAge))errors.push(`Hay jugadores mayores de ${r.maxAge} años`);
+  if(r.minAge&&players.some(p=>p.age<r.minAge))errors.push(`Hay jugadores menores de ${r.minAge} años`);
+  if(r.budget){const total=players.reduce((a,p)=>a+(p.v||0),0);if(total>r.budget)errors.push(`Presupuesto excedido: ${total}M€ / ${r.budget}M€`);}
+  if(r.minDefenders){const dc=slots.filter(s=>s.player&&["POR","DFC","LI","LD"].includes(s.pos)).length;if(dc<r.minDefenders)errors.push(`Necesitas ${r.minDefenders} def/POR (tienes ${dc})`);}
+  if(r.mixedClubs){const c0=players.filter(p=>p.c===r.mixedClubs[0]).length,c1=players.filter(p=>p.c===r.mixedClubs[1]).length;if(!((c0===r.splitCount[0]&&c1===r.splitCount[1])||(c0===r.splitCount[1]&&c1===r.splitCount[0])))errors.push(`Necesitas ${r.splitCount[0]} de ${r.mixedClubs[0]} y ${r.splitCount[1]} de ${r.mixedClubs[1]}`);}
+  const bar=document.getElementById("validateBar");bar.style.display="flex";
+  if(!errors.length){
+    const total=players.reduce((a,p)=>a+(p.v||0),0);
+    bar.className="validate-bar ok";
+    bar.innerHTML=`<i class="ti ti-trophy"></i> ¡Reto superado! Valor total: ${total}M€`;
+  } else {
+    bar.className="validate-bar err";
+    bar.innerHTML=`<i class="ti ti-alert-circle"></i> ${errors[0]}`;
+  }
+}
+
+document.addEventListener("click",e=>{
+  const dd=document.getElementById("dropdown");
+  if(dd&&!dd.contains(e.target)&&e.target.id!=="searchInput")dd.style.display="none";
+});
+
+buildChallengeGrid();
+</script>
+</body>
+</html>
